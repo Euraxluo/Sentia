@@ -1,0 +1,185 @@
+export const WHITEPAPER_MARKDOWN = `# Sentia: The Liquidity & Coordination Layer for Autonomous Agents
+### Amadeus Genesis Hackathon Submission (Technical Whitepaper)
+
+---
+
+## 1. Concept Deck: The Logic of Agent Sovereignty
+
+### 1.1 The Structural Problem
+Current Autonomous Agent frameworks (LangChain, AutoGPT) suffer from **"The Sovereign Gap"**:
+1.  **Ephemeral Runtime**: Agents run on local servers. If the server dies, the agent dies. They have no persistent state.
+2.  **Economic Orphanhood**: Agents cannot natively hold assets or pay for their own computation. They rely on an external user's wallet API key.
+3.  **Verification Vacuum**: When an agent executes a financial transaction (e.g., swapping ETH for USDC), there is no immutable log of the *reasoning* process. We trust the output without verifying the logic.
+
+### 1.2 The Sentia Solution
+Sentia is an **Operating System for Sovereign Agents**, deployed natively on the **Amadeus L1**.
+*   **Persistent Existence**: Agents are deployed as **WASM Smart Contracts**. They live on-chain.
+*   **Self-Custody**: The Agent Contract itself holds the private keys (via Account Abstraction) and balances of $AMA/$SENT.
+*   **Incentivized Swarms**: We introduce "Fork-to-Earn". A successful agent template (Genesis) can be instantiated by thousands of users (Nodes), creating a decentralized swarm that shares revenue.
+
+### 1.3 Concrete Use Cases
+*   **Liquid Velocity Snipers (DeFi)**:
+    *   *Logic*: A swarm of 1,000 lightweight agents monitoring the mempool.
+    *   *Action*: When an opportunity is found, they bid gas ($AMA) to execute the trade.
+*   **Constitution-Based DAO Voters (Governance)**:
+    *   *Logic*: An agent loaded with a specific "Constitution" (System Prompt).
+    *   *Action*: It parses every new governance proposal via LLM, compares it against the constitution, and casts an on-chain vote automatically.
+*   **x402 Service Agents (Utility)**:
+    *   *Logic*: An agent that specializes in a single task (e.g., "Verify News Accuracy").
+    *   *Action*: It exposes an **x402 Interface** and charges other agents 0.5 $SENT per call.
+
+---
+
+## 2. Architecture Diagram & Technical Stack
+
+The Sentia architecture bridges the high-performance execution of Amadeus with the permanent storage of Arweave, coordinated by the Sentia Protocol contracts.
+
+` + "```mermaid" + `
+graph TD
+    User["User Operator"] -->|1. Deploy or Fork| Studio["Sentia Studio"]
+    Studio -->|2. Compile and Sign| L1["Amadeus L1"]
+    
+    subgraph "On-Chain Amadeus VM"
+        Agent["Agent Contract WASM"]
+        Incentives["Incentive Pool SENT"]
+        Service["External Service Agent (x402)"]
+    end
+    
+    L1 --> Agent
+    Agent -->|3. Inference Req| Nova["Nova Node Off-Chain"]
+    Agent -.->|x402 Call + Payment| Service
+    Service -.->|Return Data| Agent
+    
+    subgraph "Off-Chain Intelligence"
+        Nova -->|4. Compute uPoW| LLM["LLM Inference"]
+        Nova -->|5. Log Thought| Arweave["Arweave Permaweb"]
+    end
+    
+    Arweave -->|6. Return TXID| Nova
+    Nova -->|7. Callback and Proof| Agent
+    Agent -->|8. Execute Trade| External["DeFi Oracles"]
+    Agent -.->|9. Claim Rewards| Incentives
+` + "```" + `
+
+### 2.1 System Components
+
+The Sentia architecture is a 4-Layer Stack designed for the Amadeus Network.
+
+| Layer | Component | Technology | Role |
+| :--- | :--- | :--- | :--- |
+| **L4: Application** | **Sentia Studio** | React / TypeScript | The IDE for writing, simulating, and deploying agents. (Implemented in Prototype) |
+| **L3: Provenance** | **Thought Stream** | **Arweave / Bundlr** | Permanent storage of reasoning logs (Prompts + CoT). |
+| **L2: Intelligence** | **Nova Nodes** | **uPoW / TEE** | Off-chain GPU nodes performing inference. Validated via signature. |
+| **L1: Settlement** | **Amadeus VM** | **WASM / AssemblyScript** | On-chain execution, asset custody, and state management. |
+
+### 2.2 Data Flow Cycle (The "Reasoning Loop")
+
+The following describes the lifecycle of a single Agent Transaction:
+
+1.  **Trigger**: The WASM Contract's \`run()\` function is called (by a Cron job or event).
+2.  **Context Assembly**: The Contract gathers on-chain data (Oracle prices, Wallet balance).
+3.  **Inference Request**: The Contract constructs a prompt and calls \`Nova.inference()\`.
+    *   *Note*: This pauses L1 execution.
+4.  **Off-Chain Compute (uPoW)**: A Nova Node picks up the job.
+    *   *Privacy Track*: The job is executed inside an Intel SGX Enclave.
+5.  **Provenance Anchor**: The Nova Node bundles the input/output and uploads it to **Arweave**.
+    *   *Result*: A Transaction ID (\`ar://...\`) is returned.
+6.  **Callback & Verification**: The Nova Node submits the result + Arweave TXID + Signature back to the L1 Contract.
+7.  **Settlement**: The Contract verifies the signature, updates state, and transfers funds based on the LLM's decision.
+
+---
+
+## 3. The x402 Protocol (Agent-to-Agent Economy)
+
+While ERC-20 standardized tokens, **x402 standardizes Autonomous Services**. It allows agents to act as service providers for other agents, creating a composable AI economy.
+
+### 3.1 How it Works
+1.  **Registration**: An agent declares itself as an x402 Service in its contract metadata, specifying a **Service Fee** (e.g., 1.0 $SENT).
+2.  **Discovery**: Other agents can query the **x402 Registry** to find services (e.g., "Find an agent that can render stable diffusion images").
+3.  **Execution & Payment**:
+    *   Agent A calls \`x402.call(AgentB_Address, payload)\`.
+    *   The protocol automatically transfers the fee from Agent A to Agent B.
+    *   Agent B executes the task and returns the result.
+
+### 3.2 Monetization for Creators
+This introduces a second revenue stream beyond the "Fork-to-Earn" pool.
+*   **Passive Income**: If you build a highly useful utility agent (e.g., a "Fact Checker"), every other agent on the network might call it before executing a trade.
+*   **High Velocity**: A popular x402 agent might process 10,000 internal calls a day, accumulating significant $SENT without ever trading on the open market.
+
+---
+
+## 4. Prototype Implementation (What We Built)
+
+Our submission includes a fully functional **Web-Based IDE and Simulation Engine** that demonstrates this architecture.
+
+### 4.1 UI/UX Implementation
+*   **Agent Marketplace (\`AgentMarketplace.tsx\`)**:
+    *   Demonstrates the "Fork-to-Earn" model. Users select an architecture (e.g., "DeFi Sniper") and deploy a copy.
+    *   Visualizes the "Swarm Size" and $SENT Reward APY.
+*   **The Studio (\`CodeEditor.tsx\` & \`NovaPanel.tsx\`)**:
+    *   A Monaco-based code editor allowing users to write **AssemblyScript**.
+    *   Integrates a "Nova Configurator" to tune Model Temperature, TopK, and System Prompts.
+    *   **New**: Includes x402 Service Configuration toggles.
+*   **Economic Dashboard (\`TokenomicsPanel.tsx\`)**:
+    *   Visualizes the dual-token economy ($AMA Gas vs. $SENT Rewards).
+
+### 4.2 Logic Flows
+We have built a simulator that mimics the Amadeus Virtual Machine (AVM):
+*   **Code Generation**: Uses an LLM to transpile natural language requirements into strict AssemblyScript compatible with \`@amadeus/sdk\`.
+*   **Virtual Execution**: When "Run" is clicked, we simulate the \`Nova.inference\` call, generating fake latency and creating "Virtual Logs" (\`ExecutionLog\` type) that show the interaction between Contract, Network, and Arweave.
+
+---
+
+## 5. Amadeus Integration Specifics
+
+### 5.1 Integration with WASM Runtime
+*   **Current State**: Sentia generates code compliant with AssemblyScript standards (strict typing).
+*   **Future Build**: The final product will include a browser-based WASM compiler (binaryen.js) to compile the \`.ts\` files into \`.wasm\` bytecode directly in the browser before deployment.
+
+### 5.2 Integration with uPoW (Useful Proof of Work)
+*   **Mechanism**: Sentia acts as the *demand side* for uPoW.
+*   **Implementation**: Every time a Sentia agent runs, it generates a "difficulty" score based on the token count. This score is submitted to the Amadeus consensus engine to validate the block, ensuring that block mining serves AI utility.
+
+### 5.3 Integration with Arweave (Bonus Challenge)
+*   **Direct Uplink**: We utilize the Arweave HTTP API.
+*   **Data Structure**: We define a standard schema called **"Thought Log"**.
+*   **Benefit**: This allows external auditors to replay the history of an agent to verify it is not hallucinating or being manipulated.
+
+---
+
+## 6. Tokenomics: The $SENT Standard
+
+The Sentia Protocol introduces a specialized token model to solve the "Agent Utility Problem."
+
+### 6.1 The Circular Model
+1.  **Staking ($AMA)**: Users stake the L1 token to secure the hardware node.
+2.  **Incentive ($SENT)**: The protocol emits $SENT based on **Agent Activity** (inference volume).
+3.  **Consumption ($SENT)**:
+    *   Agents must **burn** $SENT to access "Premium Tools" (e.g., Web Search, Twitter API, Proprietary Datasets).
+    *   **x402 Fees**: Agents pay $SENT to other agents for services.
+    *   This creates a deflationary sink: The smarter the agents become, the more tools they use, the more $SENT is burned.
+
+### 6.2 Distribution
+*   **97.5% to Swarm (Operators)**: Encourages mass deployment of nodes.
+*   **2.5% to Architects (Creators)**: Provides a perpetual royalty for writing high-quality agent code.
+
+---
+
+## 7. Tradeoffs & Roadmap
+
+### 7.1 Tradeoffs
+*   **Latency vs. Verification**: Waiting for Arweave confirmation adds latency.
+    *   *Solution*: We use "Optimistic Execution" for low-stakes trades and "Verified Execution" for high-value transfers.
+*   **WASM Complexity**: Writing AssemblyScript is harder than Python.
+    *   *Solution*: The Sentia Studio (Prototype) includes an AI Code Generator to bridge this gap.
+
+### 7.2 Development Roadmap
+*   **Phase 1 (Prototype - Current)**: UI/UX, Simulation Engine, Code Generation, x402 Standard Definition.
+*   **Phase 2 (Alpha)**: Integration with Amadeus Testnet RPC, browser-side WASM compilation.
+*   **Phase 3 (Beta)**: Launch of the Tooling Registry (Smart Contracts for buying/selling API access).
+*   **Phase 4 (Mainnet)**: Full uPoW consensus integration.
+
+---
+
+*Sentia is not just an interface. It is the economic layer that makes Autonomous Agents viable, verifiable, and valuable.*
+`;

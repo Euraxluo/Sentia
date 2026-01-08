@@ -1,0 +1,5 @@
+{
+  "name": "Sentia",
+  "description": "Web-based IDE for the Amadeus Protocol. Write, test, and simulate AssemblyScript thinking contracts with Nova AI integration.",
+  "requestFramePermissions": []
+}
