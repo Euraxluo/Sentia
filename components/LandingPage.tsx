@@ -274,10 +274,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onOpenWhit
              <span className="text-xs text-gray-600">Built on Amadeus Protocol</span>
            </div>
            <div className="flex gap-6">
-              <span className="hover:text-white transition-colors cursor-pointer">GitHub</span>
-              <span className="hover:text-white transition-colors cursor-pointer">Twitter</span>
-              <span className="hover:text-white transition-colors cursor-pointer">Discord</span>
-              <span className="hover:text-white transition-colors cursor-pointer">Status</span>
+              <a href="https://github.com/Euraxluo/Sentia" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors cursor-pointer">GitHub</a>
+              {/* Coming Soon
+              <span className="hover:text-white transition-colors cursor-pointer opacity-50 cursor-not-allowed">Twitter</span>
+              <span className="hover:text-white transition-colors cursor-pointer opacity-50 cursor-not-allowed">Discord</span>
+              <span className="hover:text-white transition-colors cursor-pointer opacity-50 cursor-not-allowed">Status</span>
+              */}
            </div>
         </div>
       </footer>
